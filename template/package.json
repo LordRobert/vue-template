@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A template for vue project",
   "author": "LordRobert <594713296@qq.com>",
-  "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
