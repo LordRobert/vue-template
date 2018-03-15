@@ -4,7 +4,7 @@
             <img src="static/dog.jpg">
         </div>
         <div class="language bh-mt-32">
-            <Button @click="switchLang">{{$t("btnText")}}</Button>
+            <Button @click="switchLang">\{{$t("btnText")}}</Button>
         </div>
         <div class="ajax bh-mt-32">
             <div class="city"></div>
