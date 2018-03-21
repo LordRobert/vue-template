@@ -31,21 +31,14 @@ const _dynamicMinCss = url => {
     }
 }
 
-const webpackConfig = merge(baseWebpackConfig, {
-  module: {
-    rules: utils.styleLoaders({
-      sourceMap: config.build.productionSourceMap,
-      extract: true,
-      usePostCSS: true
-    })
-  },
-  devtool: config.build.productionSourceMap ? config.build.devtool : false,
-  output: {
-    path: config.build.assetsRoot,
-    filename: utils.assetsPath('js/[name].[chunkhash].js'),
-    chunkFilename: utils.assetsPath('js/[id].[chunkhash].js')
-  },
-  plugins: [
+const _htmlReplacement = (html, app) => {
+  var appConfig = require(`../src/apps/${app}/app.config`)
+  html = html.replace('[CSS_LIBS]', buildConfig.csslibs.concat(appConfig.csslibs || []).map(item => _dynamicMinCss(item)).map(item => `<link rel="stylesheet" href="${item}">`).join('\n'))
+  html = html.replace('[JS_LIBS]', buildConfig.jslibs.concat(appConfig.jslibs || []).map(item => _dynamicMinJs(item)).map(item => `<script src="${item}"></script>`).join('\n'))
+  return html
+}
+
+var plugins = [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin({
       'process.env': env
@@ -78,20 +71,20 @@ const webpackConfig = merge(baseWebpackConfig, {
     // generate dist index.html with correct asset hash for caching.
     // you can customize output by editing /index.html
     // see https://github.com/ampedandwired/html-webpack-plugin
-    new HtmlWebpackPlugin({
-      filename: config.build.index,
-      template: 'index.html',
-      inject: true,
-      minify: {
-        removeComments: true,
-        collapseWhitespace: true,
-        removeAttributeQuotes: true
-        // more options:
-        // https://github.com/kangax/html-minifier#options-quick-reference
-      },
-      // necessary to consistently work with multiple chunks via CommonsChunkPlugin
-      chunksSortMode: 'dependency'
-    }),
+    // new HtmlWebpackPlugin({
+    //   filename: config.build.index,
+    //   template: 'index.html',
+    //   inject: true,
+    //   minify: {
+    //     removeComments: true,
+    //     collapseWhitespace: true,
+    //     removeAttributeQuotes: true
+    //     // more options:
+    //     // https://github.com/kangax/html-minifier#options-quick-reference
+    //   },
+    //   // necessary to consistently work with multiple chunks via CommonsChunkPlugin
+    //   chunksSortMode: 'dependency'
+    // }),
     // keep module.id stable when vendor modules does not change
     new webpack.HashedModuleIdsPlugin(),
     // enable scope hoisting
@@ -135,14 +128,69 @@ const webpackConfig = merge(baseWebpackConfig, {
       }
     ]),
     new ContentReplacePlugin([{
-      templateString: '<!-- [CSS_LIBS] -->',
-      newString: buildConfig.csslibs.map(item => _dynamicMinCss(item)).map(item => `<link rel="stylesheet" href="${item}">`).join('\n')
-    },{
-      templateString: '<!-- [JS_LIBS] -->',
-      newString: buildConfig.jslibs.map(item => _dynamicMinJs(item)).map(item => `<script src="${item}"></script>`).join('\n')
+      callback: _htmlReplacement
     }])
   ]
+
+
+var entryKeys = Object.keys(baseWebpackConfig.entry);
+if (entryKeys.length > 1) {
+    entryKeys.forEach(function (name) {
+      plugins.push(new HtmlWebpackPlugin({
+        // filename: name + '/index.html',
+        filename: config.build[name],
+        template: path.resolve(__dirname, 'tmp', name, 'index.html'),
+        chunks: [name, 'manifest', 'vendor'],
+        minify: {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeAttributeQuotes: true
+          // more options:
+          // https://github.com/kangax/html-minifier#options-quick-reference
+        },
+        // necessary to consistently work with multiple chunks via CommonsChunkPlugin
+        chunksSortMode: 'dependency',
+        inject: true
+      }));
+    })
+} else {
+    var name = entryKeys[0];
+    plugins.push(new HtmlWebpackPlugin({
+        filename: config.build[name],
+        template: path.resolve(__dirname, 'tmp', name, 'index.html'),
+        chunks: [name, 'manifest', 'vendor'],
+        minify: {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeAttributeQuotes: true
+          // more options:
+          // https://github.com/kangax/html-minifier#options-quick-reference
+        },
+        // necessary to consistently work with multiple chunks via CommonsChunkPlugin
+        chunksSortMode: 'dependency',
+        inject: true
+    }));
+}
+
+const webpackConfig = merge(baseWebpackConfig, {
+  module: {
+    rules: utils.styleLoaders({
+      sourceMap: config.build.productionSourceMap,
+      extract: true,
+      usePostCSS: true
+    })
+  },
+  devtool: config.build.productionSourceMap ? config.build.devtool : false,
+  output: {
+    path: config.build.assetsRoot,
+    filename: utils.assetsPath('js/[name].[chunkhash].js'),
+    chunkFilename: utils.assetsPath('js/[id].[chunkhash].js')
+  },
+  plugins: plugins
 })
+
+console.log('webpackConfig.................................')
+console.log(webpackConfig)
 
 if (config.build.productionGzip) {
   const CompressionWebpackPlugin = require('compression-webpack-plugin')

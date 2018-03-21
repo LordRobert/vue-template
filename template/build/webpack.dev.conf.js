@@ -15,19 +15,69 @@ const buildConfig = require('../build.config')
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
 
+
 const _dynamicMinJs = url => {
     if (/\.js$/.test(url)) {
         return url;
     } else {
-        return `${url}.js`;
+        return `${url}.min.js`;
     }
 }
 const _dynamicMinCss = url => {
     if (/\.css$/.test(url)) {
         return url;
     } else {
-        return `${url}.css`;
+        return `${url}.min.css`;
     }
+}
+
+const _htmlReplacement = (html, app) => {
+  var appConfig = require(`../src/apps/${app}/app.config`)
+  html = html.replace('[CSS_LIBS]', buildConfig.csslibs.concat(appConfig.csslibs || []).map(item => _dynamicMinCss(item)).map(item => `<link rel="stylesheet" href="${item}">`).join('\n'))
+  html = html.replace('[JS_LIBS]', buildConfig.jslibs.concat(appConfig.jslibs || []).map(item => _dynamicMinJs(item)).map(item => `<script src="${item}"></script>`).join('\n'))
+  return html
+}
+
+var plugins = [
+  new webpack.DefinePlugin({
+    'process.env': require('./config/dev.env')
+  }),
+  new webpack.HotModuleReplacementPlugin(),
+  new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
+  // new webpack.NoEmitOnErrorsPlugin(),
+  // copy custom static assets
+  new CopyWebpackPlugin([
+    {
+      from: path.resolve(__dirname, '../static'),
+      to: config.dev.assetsSubDirectory,
+      ignore: ['.*']
+    }
+  ]),
+  new ContentReplacePlugin([{
+    callback: _htmlReplacement
+  }])
+]
+
+var entryKeys = Object.keys(baseWebpackConfig.entry);
+if (entryKeys.length > 1) {
+    entryKeys.forEach(function (name) {
+      plugins.push(new HtmlWebpackPlugin({
+        filename: name + '/index.html',
+        template: path.resolve(__dirname, 'tmp', name, 'index.html'),
+        chunks: [name],
+        inject: true,
+        appName: name
+      }));
+    })
+} else {
+    var name = entryKeys[0];
+    plugins.push(new HtmlWebpackPlugin({
+        filename: 'index.html',
+        template: path.resolve(__dirname, 'tmp', name, 'index.html'),
+        chunks: [name],
+        inject: true,
+        appName: name
+    }));
 }
 
 const devWebpackConfig = merge(baseWebpackConfig, {
@@ -56,41 +106,16 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       : false,
     publicPath: config.dev.assetsPublicPath,
     proxy: buildConfig.proxy,
-    quiet: true, // necessary for FriendlyErrorsPlugin
+    quiet: false, // necessary for FriendlyErrorsPlugin
     watchOptions: {
       poll: config.dev.poll,
     }
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': require('./config/dev.env')
-    }),
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
-    new webpack.NoEmitOnErrorsPlugin(),
-    // https://github.com/ampedandwired/html-webpack-plugin
-    new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: 'index.html',
-      inject: true
-    }),
-    // copy custom static assets
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, '../static'),
-        to: config.dev.assetsSubDirectory,
-        ignore: ['.*']
-      }
-    ]),
-    new ContentReplacePlugin([{
-      templateString: '<!-- [CSS_LIBS] -->',
-      newString: buildConfig.csslibs.map(item => _dynamicMinCss(item)).map(item => `<link rel="stylesheet" href="${item}">`).join('\n')
-    },{
-      templateString: '<!-- [JS_LIBS] -->',
-      newString: buildConfig.jslibs.map(item => _dynamicMinJs(item)).map(item => `<script src="${item}"></script>`).join('\n')
-    }])
-  ]
+  plugins: plugins
 })
+
+console.log('devWebpackConfig----------------------------')
+console.log(devWebpackConfig)
 
 module.exports = new Promise((resolve, reject) => {
   portfinder.basePort = process.env.PORT || buildConfig.port
@@ -112,6 +137,8 @@ module.exports = new Promise((resolve, reject) => {
         ? utils.createNotifierCallback()
         : undefined
       }))
+
+      console.log('complete...........................')
 
       resolve(devWebpackConfig)
     }

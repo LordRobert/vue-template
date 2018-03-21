@@ -1,0 +1,4 @@
+module.exports = {
+    "lang": "cn",
+    "csslibs": ["https://unpkg.com/font-awesome@4.7.0/css/font-awesome.css"]
+}

@@ -4,7 +4,7 @@
 
 const CSS_LIBS = [
     '//cdn.bootcss.com/normalize/7.0.0/normalize',
-    '//cdn.bootcss.com/highlight.js/9.12.0/styles/xt256.min.css',
+    // '//cdn.bootcss.com/highlight.js/9.12.0/styles/xt256.min.css',
     '//cdn.bootcss.com/iview/2.8.0/styles/iview.css',
     '//feres.cpdaily.com/custom/forNOBH/position_assistance.css'
 ];
@@ -16,11 +16,11 @@ const JS_LIBS = [
     '//cdn.bootcss.com/vuex/2.2.1/vuex',
     '//cdn.bootcss.com/axios/0.15.3/axios',
     '//cdn.bootcss.com/iview/2.8.0/iview',
-    '//cdn.bootcss.com/jquery/3.2.1/jquery',
-    '//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js',
-    '//cdn.bootcss.com/jquery.qrcode/1.0/jquery.qrcode.min.js',
-    '//cdn.bootcss.com/dom-to-image/2.6.0/dom-to-image.min.js',
-    '//cdn.bootcss.com/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js'
+    // '//cdn.bootcss.com/jquery/3.2.1/jquery',
+    // '//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js',
+    // '//cdn.bootcss.com/jquery.qrcode/1.0/jquery.qrcode.min.js',
+    // '//cdn.bootcss.com/dom-to-image/2.6.0/dom-to-image.min.js',
+    // '//cdn.bootcss.com/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js'
 ];
 
 module.exports = {
@@ -29,6 +29,7 @@ module.exports = {
     },
     alias: {
         '@': 'src',
+        'src': 'src',
         'com': 'src/pages/components',
         'services': 'src/services',
         'conf': 'src/config',
