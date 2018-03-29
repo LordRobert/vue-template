@@ -150,7 +150,8 @@ if (entryKeys.length > 1) {
         },
         // necessary to consistently work with multiple chunks via CommonsChunkPlugin
         chunksSortMode: 'dependency',
-        inject: true
+        inject: true,
+        appName: name
       }));
     })
 } else {
@@ -168,7 +169,8 @@ if (entryKeys.length > 1) {
         },
         // necessary to consistently work with multiple chunks via CommonsChunkPlugin
         chunksSortMode: 'dependency',
-        inject: true
+        inject: true,
+        appName: name
     }));
 }
 
@@ -189,8 +191,8 @@ const webpackConfig = merge(baseWebpackConfig, {
   plugins: plugins
 })
 
-console.log('webpackConfig.................................')
-console.log(webpackConfig)
+// console.log('webpackConfig.................................')
+// console.log(webpackConfig)
 
 if (config.build.productionGzip) {
   const CompressionWebpackPlugin = require('compression-webpack-plugin')

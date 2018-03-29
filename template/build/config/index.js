@@ -116,7 +116,7 @@ var buildEntryFiles = function() {
         apps.forEach(app => {
             prepareEntryFiles(app);
             entries[app] = `./build/tmp/${app}/main.js`;
-            buildConf[app] = `./${app}/index.html`;
+            buildConf[app] = path.resolve(buildConfig.distDir, `./${app}/index.html`);
         });
     } else { // 若只有一个 app，则直接打包到根目录，不需要用子目录来区分
         var app = apps[0];
@@ -190,7 +190,7 @@ module.exports = {
      * Source Maps
      */
 
-    productionSourceMap: true,
+    productionSourceMap: false,
     // https://webpack.js.org/configuration/devtool/#production
     devtool: '#source-map',
 
